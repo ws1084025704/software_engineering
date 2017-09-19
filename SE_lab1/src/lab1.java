@@ -2,6 +2,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Stack;
+
+import javax.swing.plaf.synth.SynthSpinnerUI;
+
 import java.util.Scanner;
 import java.util.Set;
 import java.io.*;
@@ -9,16 +12,121 @@ import java.util.Random;
 public class lab1 {
 
 	public static void main(String[] args) {
-
 		lab1 cls = new lab1();
-		Graph g = cls.createDirectedGraph("input.txt");
-		cls.showDirectedGraph(g);
-		// System.out.println(cls.generateNewText(g, "Seek to explore new and
-		// exciting synergies"));
-		// cls.testQueryBridgeWords(cls, g);
-//		System.out.println(cls.calcShortestPath(g, "new", ""));
-		System.out.println(cls.randomWalk(g));
-		System.out.println("Bingo!\n");
+		Graph G=null;
+		System.out.println("请输入数字指令进行相关操作:");
+		System.out.println("0.查看帮助菜单");
+		System.out.println("1.读入文本并生成有向图");
+		System.out.println("2.展示有向图");
+		System.out.println("3.查询桥接词");
+		System.out.println("4.根据bridge word生成新文本");
+		System.out.println("5.计算两个单词之间的最短路径");
+		System.out.println("6.随机游走");
+		System.out.println("7.退出程序");
+		int op;
+		Scanner scan=new Scanner(System.in);
+		op=scan.nextInt();
+		while(op!=7)
+		{
+			switch (op) {
+			case 0:
+				System.out.println("请输入数字指令进行相关操作:");
+				System.out.println("0.查看帮助菜单");
+				System.out.println("1.读入文本并生成有向图");
+				System.out.println("2.展示有向图");
+				System.out.println("3.查询桥接词");
+				System.out.println("4.根据bridge word生成新文本");
+				System.out.println("5.计算两个单词之间的最短路径");
+				System.out.println("6.随机游走");
+				System.out.println("7.退出程序");
+				break;
+			case 1:
+				System.out.println("请输入文本文件地址");
+				String input=scan.next();
+				G=cls.createDirectedGraph(input);
+				System.out.println("有向图生成成功");
+				break;
+			case 2:
+				if(G==null)
+				{
+					System.out.println("请先生成有向图");
+					break;
+				}
+				cls.showDirectedGraph(G);
+				System.out.println("成功导出有向图DotGraph.pdf");
+				break;
+			case 3:
+				if(G==null)
+				{
+					System.out.println("请先生成有向图");
+					break;
+				}
+				System.out.println("请输入单词word1,word2，用空格隔开");
+				String word1,word2;
+				word1=scan.next();
+				word2=scan.next();
+				String bridge=cls.queryBridgeWords(G, word1, word2);
+				System.out.println(bridge);
+				break;
+			case 4:
+				if(G==null)
+				{
+					System.out.println("请先生成有向图");
+					break;
+				}
+				System.out.println("请输入一行新文本");
+				scan.nextLine();
+				String inputText=scan.nextLine();
+				System.out.println(cls.generateNewText(G, inputText));
+				break;
+			case 5:
+				if(G==null)
+				{
+					System.out.println("请先生成有向图");
+					break;
+				}
+				System.out.println("请选择输入命令标号和对应数量单词(以空格分割)");
+				System.out.println("1.查询两个单词间的最短路径,2.查询一个单词到其他单词最短路径");
+				int opx=scan.nextInt();
+				String word3,word4;
+				if(opx==1)
+				{
+					word3=scan.next();
+					word4=scan.next();
+					System.out.println(cls.calcShortestPath(G, word3, word4));
+				}
+				else if(opx==2)
+				{
+					word3=scan.next();
+					System.out.println(cls.calcShortestPath(G, word3, ""));
+				}
+				else
+				{
+					System.out.println("输入错误，请重新操作");
+					break;
+				}
+				break;
+			case 6:
+				if(G==null)
+				{
+					System.out.println("请先生成有向图");
+					break;
+				}
+				System.out.println(cls.randomWalk(G));
+				System.out.println("随机游走完毕");
+				break;
+			default:
+				System.out.println("指令错误，请从新输入");
+				break;
+			}
+			try {
+				op=scan.nextInt();
+			} catch (Exception e) {
+				System.out.println("指令操作，请重新输入");
+				op=scan.nextInt();
+			}
+		}
+		System.out.println("程序退出完毕");
 	}
 
 	public void testQueryBridgeWords(lab1 cls, Graph g) {
@@ -121,7 +229,7 @@ public class lab1 {
 			if (v3.adjEdges.containsKey(word2)) {
 				pre = now;
 				now = m.getKey();
-				if (pre.equals(""))
+				if (!pre.equals(""))
 					words += pre + ", ";
 			}
 		}
@@ -141,13 +249,14 @@ public class lab1 {
 			if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))
 				now += c;
 			else if (c == ' ' || c == '\t') {
-				result += " " + pre;
+				if(pre!="")
+				result +=pre+" ";
 				if (!pre.equals("") && G.vexs.containsKey(pre.toLowerCase())) {
 					Vex v1 = G.vexs.get(pre.toLowerCase());
 					for (Map.Entry<String, Integer> m : v1.adjEdges.entrySet()) {
 						Vex v3 = G.vexs.get(m.getKey());
 						if (v3.adjEdges.containsKey(now)) {
-							result += " " + m.getKey();
+							result += m.getKey()+" ";
 							break;
 						}
 					}
@@ -159,19 +268,19 @@ public class lab1 {
 		}
 		if (!now.equals("")) // 处理最后的串
 		{
-			result += " " + pre;
+			result +=pre+" ";
 			if (!pre.equals("") && G.vexs.containsKey(pre.toLowerCase())) {
 				Vex v1 = G.vexs.get(pre.toLowerCase());
 				for (Map.Entry<String, Integer> m : v1.adjEdges.entrySet()) {
 					Vex v3 = G.vexs.get(m.getKey());
 					if (v3.adjEdges.containsKey(now)) {
-						result += " " + m.getKey();
+						result +=m.getKey()+" ";
 						break;
 					}
 				}
 			}
 		}
-		result += " " + now;
+		result +=now+" ";
 		return result;
 	}
 
@@ -218,7 +327,11 @@ public class lab1 {
 				p = pre.get(p);
 			}
 			try {
-				String dotFormat = "label=\"distance="+dist.get(word2)+"\";";
+				String dotFormat;
+				if(word2.equals(word1))
+					dotFormat ="label=\"distance=0\";";
+				else
+					dotFormat = "label=\"distance="+dist.get(word2)+"\";";
 
 				for (Map.Entry<String, Vex> m : G.vexs.entrySet()) {
 					Vex v = m.getValue();
@@ -244,8 +357,11 @@ public class lab1 {
 					p = pre.get(p);
 				}
 				try {
-					String dotFormat = "label=\"distance="+dist.get(m.getKey())+"\";";
-
+					String dotFormat;
+					if(word1.equals(m.getKey()))
+						dotFormat = "label=\"distance=0\";";
+					else
+						dotFormat = "label=\"distance="+dist.get(m.getKey())+"\";";
 					for (Map.Entry<String, Vex> m1 : G.vexs.entrySet()) {
 						Vex v = m1.getValue();
 						for (Map.Entry<String, Integer> t : v.adjEdges.entrySet()) {
@@ -274,6 +390,11 @@ public class lab1 {
 		int randNum=new Random().nextInt(G.vexs.size());
 		String s=index.get(randNum);
 		String path="";
+//		Scanner scan=new Scanner(System.in);
+//		int times=0;
+//		System.out.println("请输入遍历字符个数，输入0则全部遍历");
+//		times=scan.nextInt();
+		
 		while(true)
 		{
 			path+=s+" ";
@@ -288,6 +409,7 @@ public class lab1 {
 			String temp=vexIndex.get(rand_vex_Num);
 			if(set.contains(new StringPair(s,temp)))
 			{
+				path+=temp;
 				break;
 			}
 			set.add(new StringPair(s,temp));
@@ -295,6 +417,43 @@ public class lab1 {
 		}
 		return path;
 	}
+//	String randomWalk(Graph G)
+//	{
+//		Map<Integer,String> index=new HashMap<Integer,String>();
+//		Set<StringPair> set=new HashSet<StringPair>();
+//		int i=0;
+//		for(Map.Entry<String, Vex> m:G.vexs.entrySet())
+//			index.put(i++,m.getKey());
+//		int randNum=new Random().nextInt(G.vexs.size());
+//		String s=index.get(randNum);
+//		String path="";
+////		Scanner scan=new Scanner(System.in);
+////		int times=0;
+////		System.out.println("请输入遍历字符个数，输入0则全部遍历");
+////		times=scan.nextInt();
+//		
+//		while(true)
+//		{
+//			path+=s+" ";
+//			Vex v=G.vexs.get(s);
+//			if(v.adjEdges.isEmpty())
+//				break;
+//			Map<Integer,String> vexIndex=new HashMap<Integer,String>();
+//			int j=0;
+//			for(Map.Entry<String, Integer> m:v.adjEdges.entrySet())
+//				vexIndex.put(j++,m.getKey());
+//			int rand_vex_Num=new Random().nextInt(v.adjEdges.size());
+//			String temp=vexIndex.get(rand_vex_Num);
+//			if(set.contains(new StringPair(s,temp)))
+//			{
+//				path+=temp;
+//				break;
+//			}
+//			set.add(new StringPair(s,temp));
+//			s=temp;
+//		}
+//		return path;
+//	}
 }
 
 class Vex {
@@ -329,12 +488,12 @@ class StringPair{
 		if(getClass()!=obj.getClass())
 			return false;
 		StringPair temp=(StringPair)obj;
-		if(temp.s1!=this.s1||temp.s2!=this.s2)
+		if(!temp.s1.equals(this.s1)||!temp.s2.equals(this.s2))
 			return false;
 		return true;
 	}
 	public int hashCode(){
-		return this.s1.length()+this.s2.length();
+		return 1;
 	}
 }
 class Graph {
@@ -346,5 +505,4 @@ class Graph {
 		m = 0;
 		vexs = new HashMap<String, Vex>();
 	}
-
 }
